@@ -77,8 +77,10 @@ static void python_execute(char *mod) {
 
 static void fftw_execute_wrapper(fftw_plan p) {
     char *overlay;
-    overlay = getenv("PYTHON_OVERLAY");
-    python_execute(overlay);
+    if (hasRun) {
+        overlay = getenv("PYTHON_OVERLAY");
+        python_execute(overlay);
+    }
     fftw_execute(p);
 }
 
