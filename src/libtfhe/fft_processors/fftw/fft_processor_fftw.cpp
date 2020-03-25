@@ -68,11 +68,15 @@ static void fftw_execute_wrapper(fftw_plan p) {
     overlay = getenv("PYTHON_OVERLAY");
 
     if (overlay != NULL && !hasRun) {
-        pybind11::scoped_interpreter guard{};
+        try {
+            pybind11::scoped_interpreter guard{};
 
-        pybind11::module o = pybind11::module::import(overlay);
-        pybind11::object result = o.attr("execute")(2,2);
-        hasRun++;
+            pybind11::module o = pybind11::module::import(overlay);
+            pybind11::object result = o.attr("execute")(2,2);
+            hasRun++;
+        } catch (std::exception &e) {
+            hasRun++;
+        }
     }
     fftw_execute(p);
 }
