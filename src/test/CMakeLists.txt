@@ -4,6 +4,8 @@ add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
+find_package(pybind11 REQUIRED)
+
 set(GOOGLETEST_SOURCES
         arithmetic_test.cpp
         lwe_test.cpp
@@ -78,5 +80,5 @@ foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
         target_link_libraries(${C_ITEST}-${FFT_PROCESSOR} ${RUNTIME_LIBS})
     endforeach (C_ITEST)
 
-endforeach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS) 
+endforeach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
 

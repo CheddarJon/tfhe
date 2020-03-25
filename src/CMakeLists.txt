@@ -39,7 +39,6 @@ if (ENABLE_FFTW)
 list(APPEND FFT_PROCESSORS "fftw")
 ## find fftw
 find_package(PkgConfig)
-find_package(pybind11 REQUIRED)
 pkg_check_modules(PC_FFTW QUIET fftw3)
 set(FFTW_DEFINITIONS ${PC_FFTW_CFLAGS_OTHER})
 find_path(FFTW_INCLUDES fftw3.h
