@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <pybind11/embed.h>
 #include "tfhe.h"
 #include "fakes/tgsw.h"
 #include "fakes/tgsw-fft.h"
@@ -90,8 +91,8 @@ namespace {
      * @param bara An array of n coefficients between 0 and 2N-1
      * @param bk_params The parameters of bk
      */
-    //EXPORT void tfhe_BlindRotate(TLweSample* accum, 
-    //      const TGswSample* bk, 
+    //EXPORT void tfhe_BlindRotate(TLweSample* accum,
+    //      const TGswSample* bk,
     //      const int32_t* bara,
     //      const int32_t n,
     //      const TGswParams* bk_params) {
@@ -258,8 +259,8 @@ namespace {
      * @param mu The output message (if phase(x)>0)
      * @param x The input sample
      */
-    //EXPORT void tfhe_bootstrap(LweSample* result, 
-    //  const LweBootstrappingKey* bk, 
+    //EXPORT void tfhe_bootstrap(LweSample* result,
+    //  const LweBootstrappingKey* bk,
     //  Torus32 mu, const LweSample* x)
 
     TEST_F(TfheBootstrapWoKSFFTTest, tfheBootstrapWoKSFFTTest) {
@@ -357,8 +358,8 @@ namespace {
      * @param mu The output message (if phase(x)>0)
      * @param x The input sample
      */
-    //EXPORT void tfhe_bootstrap(LweSample* result, 
-    //  const LweBootstrappingKey* bk, 
+    //EXPORT void tfhe_bootstrap(LweSample* result,
+    //  const LweBootstrappingKey* bk,
     //  Torus32 mu, const LweSample* x)
 
     TEST_F(TfheBootstrapFFTTest, tfheBootstrapFFTTest) {
@@ -455,8 +456,8 @@ namespace {
      * @param mu The output message (if phase(x)>0)
      * @param x The input sample
      */
-    //EXPORT void tfhe_bootstrap(LweSample* result, 
-    //  const LweBootstrappingKey* bk, 
+    //EXPORT void tfhe_bootstrap(LweSample* result,
+    //  const LweBootstrappingKey* bk,
     //  Torus32 mu, const LweSample* x)
 
     TEST_F(TfheInitLweBootstrappingKeyFFTTest, tfheInitLweBootstrappingKeyFFTTest) {
@@ -477,7 +478,7 @@ namespace {
         const int32_t base = bk->ks->base;
         const int32_t N = bk_params->tlwe_params->extracted_lweparams.n;
 
-        // KeySwitching 
+        // KeySwitching
         for (int32_t i = 0; i < N; i++) {
             for (int32_t j = 0; j < t; j++) {
                 for (int32_t p = 0; p < base; p++) {
@@ -488,7 +489,7 @@ namespace {
             }
         }
 
-        // Bootstrapping Key FFT 
+        // Bootstrapping Key FFT
         for (int32_t i = 0; i < n; ++i) {
             ASSERT_EQ(intPolynomialNormInftyDist(fake(&bkFFT->bkFFT[i])->message, fake(&bk->bk[i])->message), 0);
             ASSERT_EQ(fake(&bkFFT->bkFFT[i])->current_variance, fake(&bk->bk[i])->current_variance);
