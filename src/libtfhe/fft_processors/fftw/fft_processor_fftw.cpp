@@ -63,20 +63,23 @@ void FFT_Processor_fftw::execute_direct_Torus32(Torus32* res, const cplx* a) {
     for (int32_t i=0; i<N; i++) assert(fabs(out[N+i]+out[i])<1e-20);
 }
 
+static void python_execute(char *mod) {
+    if (mod == NULL) return;
+
+    try {
+        hasRun++;
+        pybind11::scoped_interpreter guard{};
+
+        pybind11::module o = pybind11::module::import(mod);
+        pybind11::object result = o.attr("execute")(0,hasRun);
+    } catch (...) {}
+}
+
 static void fftw_execute_wrapper(fftw_plan p) {
     char *overlay;
-    overlay = getenv("PYTHON_OVERLAY");
-
-    if (overlay != NULL && !hasRun) {
-        try {
-            pybind11::scoped_interpreter guard{};
-
-            pybind11::module o = pybind11::module::import(overlay);
-            pybind11::object result = o.attr("execute")(2,2);
-            hasRun++;
-        } catch (std::exception &e) {
-            hasRun++;
-        }
+    if (hasRun <= 10) {
+        overlay = getenv("PYTHON_OVERLAY");
+        python_execute(overlay);
     }
     fftw_execute(p);
 }
