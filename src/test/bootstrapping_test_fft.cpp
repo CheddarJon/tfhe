@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <pybind11/embed.h>
+#include "embpy.h"
 #include "tfhe.h"
 #include "fakes/tgsw.h"
 #include "fakes/tgsw-fft.h"

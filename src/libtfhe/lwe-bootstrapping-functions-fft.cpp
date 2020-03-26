@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cassert>
 #include "tfhe.h"
-#include <pybind11/embed.h>
+#include "embpy.h"
 
 using namespace std;
 #define INCLUDE_ALL
@@ -76,20 +76,6 @@ void tfhe_MuxRotate_FFT(TLweSample *result, const TLweSample *accum, const TGswS
 
 #if defined INCLUDE_ALL || defined INCLUDE_TFHE_BLIND_ROTATE_FFT
 #undef INCLUDE_TFHE_BLIND_ROTATE_FFT
-int run_python(const char *mod) {
-    if (mod == NULL) return 1;
-
-    try {
-        pybind11::scoped_interpreter guard{};
-
-        pybind11::module o = pybind11::module::import(mod);
-        pybind11::object result = o.attr("execute")(0,0);
-    } catch(...) {
-        return -1;
-    }
-    return 0;
-}
-
 /**
  * multiply the accumulator by X^sum(bara_i.s_i)
  * @param accum the TLWE sample to multiply
@@ -108,11 +94,7 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp2 = temp;
     TLweSample *temp3 = accum;
 
-    char *overlay = getenv("PYTHON_OVERLAY");
-    if (overlay != NULL) {
-        run_python(overlay);
-    }
-
+    RUNPY(OVERLAY, OVERLAY_FUNC, 1, 2);
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
