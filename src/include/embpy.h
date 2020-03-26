@@ -1,4 +1,5 @@
 #include <pybind11/embed.h>
+#include <sstream>
 namespace py = pybind11;
 
 #define OVERLAY "PYTHON_OVERLAY"
@@ -10,10 +11,39 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
         .def(py::init<int32_t, int32_t, double, double>());
 
     py::class_<TLweSample>(m, "TLweSample")
-        .def(py::init<const TLweParams *>());
+        .def(py::init<const TLweParams *>())
+        .def("__repr__",
+            [](const TLweSample &o) {
+                std::ostringstream os;
+                os << "<TLweSample: 2 TorusPolynomial arrays size "
+                    << std::to_string(o.k);
+                if (o.k > 0) {
+                    os << "<TorusPolynomial> 1 array size "
+                        << std::to_string(std::max(o.a[0].N, o.b[0].N));
+                }
+                os << ">";
+                return os.str();
+            }
+        );
 
     py::class_<TGswParams>(m, "TGswParams")
-        .def(py::init<int32_t, int32_t, const TLweParams *>());
+        .def(py::init<int32_t, int32_t, const TLweParams *>())
+        .def("__repr__",
+            [](const TGswParams &o) {
+                std::ostringstream os;
+                os << "<TGswParams: 'l = " << std::to_string(o.l) << "' ";
+                os << "'#of rows ((k+1)*l) = " << std::to_string(o.kpl) << "' ";
+                if (o.kpl > 0) {
+                    os << "'k = " << std::to_string(o.tlwe_params[0].k) << "' ";
+                    os << "'N = " << std::to_string(o.tlwe_params[0].N) << "' ";
+                } else {
+                    os << "'k = " <<  "?', ";
+                    os << "'N = " << "?'";
+                }
+                os << ">";
+                return os.str();
+            }
+        );
 
     py::class_<LagrangeHalfCPolynomial>(m, "LagrangeHalfCPolynomial")
         .def(py::init<>());

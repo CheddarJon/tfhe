@@ -94,7 +94,7 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp2 = temp;
     TLweSample *temp3 = accum;
 
-    RUNPY(OVERLAY, OVERLAY_FUNC, accum, n);
+    RUNPY(OVERLAY, OVERLAY_FUNC, bk_params, n);
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
