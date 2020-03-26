@@ -4,8 +4,6 @@ add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
-find_package(pybind11 REQUIRED)
-
 set(GOOGLETEST_SOURCES
         arithmetic_test.cpp
         lwe_test.cpp

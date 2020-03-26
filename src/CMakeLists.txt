@@ -13,6 +13,8 @@ set(ENABLE_SPQLIOS_FMA OFF CACHE BOOL "Enable the SPQLIOS FMA assembly FFT proce
 set(ENABLE_TESTS ON CACHE BOOL "Build the tests (requires googletest)")
 
 project(tfhe)
+find_package(pybind11 REQUIRED)
+set(PYBIND11_PYTHON_VERSION "3.8")
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang")
   # https://stackoverflow.com/a/16229679
