@@ -7,6 +7,7 @@ namespace py = pybind11;
 #define OVERLAY_FUNC_ARGC 2
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
+    /* Classes required to send data to python. */
     py::class_<TLweParams>(m, "TLweParams")
         .def(py::init<int32_t, int32_t, double, double>());
 
@@ -53,6 +54,26 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
 
     py::class_<TGswSampleFFT>(m, "TGswSampleFFT")
         .def(py::init<const TGswParams *, TLweSampleFFT *>());
+
+    /* Functions used to expand tfhe_blindRoate_FFT in python. */
+    m.def("tLweMulByXaiMinusOne",
+            &tLweMulByXaiMinusOne,
+            py::return_value_policy::reference
+    );
+
+    m.def("tGswFFTExternMulToLwe",
+            &tGswFFTExternMulToTLwe,
+            py::return_value_policy::reference
+    );
+
+    m.def("tLweAddTo",
+            &tLweAddTo,
+            py::return_value_policy::reference
+    );
+
+    m.def("swap",
+        [](TLweSample *a, TLweSample *b) {std::swap(a, b);}
+    );
 }
 
 #define RUNPY(overlay, func, a, b) ({\
