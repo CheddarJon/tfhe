@@ -14,7 +14,6 @@
 #include <lagrangehalfc_arithmetic.h>
 #include "fakes/tlwe.h"
 #include "fakes/tlwe-fft.h"
-#include "embpy.h"
 
 #define TFHE_TEST_ENVIRONMENT 1
 

@@ -9,7 +9,8 @@ namespace py = pybind11;
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
     /* Classes required to send data to python. */
     py::class_<TLweParams>(m, "TLweParams")
-        .def(py::init<int32_t, int32_t, double, double>());
+        .def(py::init<int32_t, int32_t, double, double>())
+        ;
 
     py::class_<TLweSample>(m, "TLweSample")
         .def(py::init<const TLweParams *>())
@@ -24,8 +25,8 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
                 }
                 os << ">";
                 return os.str();
-            }
-        );
+            })
+        ;
 
     py::class_<TGswParams>(m, "TGswParams")
         .def(py::init<int32_t, int32_t, const TLweParams *>())
@@ -44,34 +45,26 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
                 }
                 os << ">";
                 return os.str();
-            }
-        );
+            })
+        ;
 
-    py::class_<LagrangeHalfCPolynomial, std::unique_ptr<LagrangeHalfCPolynomial, py::nodelete>>(m, "LagrangeHalfCPolynomial")
+    py::class_<LagrangeHalfCPolynomial>(m, "LagrangeHalfCPolynomial")
         .def(py::init<>())
-        .def("__getitem__",
-            [](const LagrangeHalfCPolynomial *a, int i){
-                return a + i;
-            }
-        );
+        ;
 
-    py::class_<TLweSampleFFT, std::unique_ptr<TLweSampleFFT, py::nodelete>>(m, "TLweSampleFFT")
+    py::class_<TLweSampleFFT>(m, "TLweSampleFFT")
         .def(py::init([](const TLweParams *params, LagrangeHalfCPolynomial *a, double cv)
             {
                 return new TLweSampleFFT(params, a, cv);
-            })
-        )
-        .def("__getitem__",
-            [](const TLweSampleFFT *a, int i){
-                return a + i;
-            }
-        );
+            }))
+        ;
 
     py::class_<TGswSampleFFT>(m, "TGswSampleFFT")
         .def(py::init<const TGswParams *, TLweSampleFFT *>())
-        .def_readwrite("all_samples", &TGswSampleFFT::all_samples);
+        .def_readwrite("all_samples", &TGswSampleFFT::all_samples)
+        ;
 
-    py::class_<IntPolynomial, std::unique_ptr<IntPolynomial, py::nodelete>>(m, "IntPolynomial")
+    /*py::class_<IntPolynomial, std::unique_ptr<IntPolynomial, py::nodelete>>(m, "IntPolynomial")
         .def(py::init([](const int32_t N)
             {
                 return new_IntPolynomial(N);
@@ -81,26 +74,36 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
             [](const IntPolynomial *a, int i){
                 return a + i;
             }
-        );
+        );*/
 
     /* Functions used to expand tfhe_blindRoate_FFT in python. */
     m.def("tGswFFTExternMulToTLwe", &tGswFFTExternMulToTLwe);
 
-    m.def("IntPolynomial_ifft", &IntPolynomial_ifft);
+    //m.def("tLweMulByXaiMinusOne", &tLweMulByXaiMinusOne);
 
-    m.def("tLweFromFFTConvert", &tLweFromFFTConvert);
+    //m.def("tLweAddTo", &tLweAddTo);
 
-    m.def("tLweFFTAddMulRTo", &tLweFFTAddMulRTo);
+    /*m.def("swap",
+        [](TLweSample *a, TLweSample *b){
+            std::swap(a, b);
+        }
+    );*/
 
-    m.def("tLweFFTClear", &tLweFFTClear);
+    //m.def("IntPolynomial_ifft", &IntPolynomial_ifft);
+
+    //m.def("tLweFromFFTConvert", &tLweFromFFTConvert);
+
+    //m.def("tLweFFTAddMulRTo", &tLweFFTAddMulRTo);
+
+    //m.def("tLweFFTClear", &tLweFFTClear);
 }
 
-#define RUNPY(overlay, func, a, b, c, d, e, f, g) ({\
+#define RUNPY(overlay, func, a, b, c, d, e, f) ({\
         char *mod = getenv(overlay);\
         if (mod != NULL) {\
         try {\
             py::scoped_interpreter guard{};\
             py::module o = py::module::import(mod);\
-            py::object ret = o.attr(func)(a, b, c, d, e, f, g);}\
+            py::object ret = o.attr(func)(a, b, c, d, e, f);}\
         catch(const std::exception& e){std::cerr << e.what() << std::endl;}}\
         })

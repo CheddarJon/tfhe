@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cassert>
 #include "tfhe.h"
+#include "embpy.h"
 
 using namespace std;
 #define INCLUDE_ALL
@@ -93,11 +94,53 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp2 = temp;
     TLweSample *temp3 = accum;
 
+    //RUNPY(OVERLAY, OVERLAY_FUNC, n, bara, temp2, temp3, bk_params, bkFFT);
+
+    char *mod = getenv(OVERLAY);
+    if (mod == NULL) {
+        delete_TLweSample(temp);
+        return;
+    }
+    py::scoped_interpreter guard{};
+    py::module overlay = py::module::import(mod);
+
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
 
-        tfhe_MuxRotate_FFT(temp2, temp3, bkFFT + i, barai, bk_params);
+        //tfhe_MuxRotate_FFT(temp2, temp3, bkFFT + i, barai, bk_params);
+        tLweMulByXaiMinusOne(temp2, barai, temp3, bk_params->tlwe_params);
+
+        //tGswFFTExternMulToTLwe(temp2, bkFFT + i, bk_params);
+        overlay.attr(OVERLAY_FUNC)(temp2, bkFFT + i, bk_params);
+        //EXPANSION
+        /*
+        const TLweParams *tlwe_params = bk_params->tlwe_params;
+        const int32_t k = tlwe_params->k;
+        const int32_t l = bk_params->l;
+        const int32_t kpl = bk_params->kpl;
+        const int32_t N = tlwe_params->N;
+        IntPolynomial *deca = new_IntPolynomial_array(kpl, N);
+        LagrangeHalfCPolynomial *decaFFT = new_LagrangeHalfCPolynomial_array(kpl, N);
+        TLweSampleFFT *tmpa = new_TLweSampleFFT(tlwe_params);
+
+        for (int32_t j = 0; j <= k; j++)
+            tGswTorus32PolynomialDecompH(deca + j * l, temp2->a + j, bk_params);
+
+        for (int32_t p = 0; p < kpl; p++)
+            IntPolynomial_ifft(decaFFT + p, deca + p);
+        tLweFFTClear(tmpa, tlwe_params);
+
+        for (int32_t p = 0; p < kpl; p++)
+            tLweFFTAddMulRTo(tmpa, decaFFT + p, (bkFFT + i)->all_samples + p, tlwe_params);
+        tLweFromFFTConvert(accum, tmpa, tlwe_params);
+
+        delete_TLweSampleFFT(tmpa);
+        delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
+        delete_IntPolynomial_array(kpl, deca);
+        //END EXPANSION
+        */
+        tLweAddTo(temp2, temp3, bk_params->tlwe_params);
         swap(temp2, temp3);
     }
     if (temp3 != accum) {

@@ -3,6 +3,7 @@
 #include "fakes/tgsw.h"
 #include "fakes/tgsw-fft.h"
 #include "fakes/lwe-bootstrapping-fft.h"
+#include "embpy.h"
 
 #define TFHE_TEST_ENVIRONMENT 1
 using namespace std;

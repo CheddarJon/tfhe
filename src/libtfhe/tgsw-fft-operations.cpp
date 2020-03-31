@@ -19,7 +19,6 @@ TGSW fft operations
 #include "polynomials_arithmetic.h"
 #include "lagrangehalfc_arithmetic.h"
 #include "lwebootstrappingkey.h"
-#include "embpy.h"
 
 using namespace std;
 #else
@@ -101,18 +100,15 @@ EXPORT void tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, 
     for (int32_t i = 0; i <= k; i++)
         tGswTorus32PolynomialDecompH(deca + i * l, accum->a + i, params);
 
-    RUNPY(OVERLAY, OVERLAY_FUNC, kpl, decaFFT, deca, tmpa, tlwe_params, gsw, accum);
-    /*for (int32_t p = 0; p < kpl; p++)
+    for (int32_t p = 0; p < kpl; p++)
         IntPolynomial_ifft(decaFFT + p, deca + p);
 
     tLweFFTClear(tmpa, tlwe_params);
-
 
     for (int32_t p = 0; p < kpl; p++) {
         tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p, tlwe_params);
     }
     tLweFromFFTConvert(accum, tmpa, tlwe_params);
-    */
 
     delete_TLweSampleFFT(tmpa);
     delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
