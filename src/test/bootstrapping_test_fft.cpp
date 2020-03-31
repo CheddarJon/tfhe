@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "tfhe.h"
-#include "embpy.h"
 #include "fakes/tgsw.h"
 #include "fakes/tgsw-fft.h"
 #include "fakes/lwe-bootstrapping-fft.h"

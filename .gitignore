@@ -4,3 +4,4 @@ callgrind.*
 doc
 build
 TAGS
+__pycache__

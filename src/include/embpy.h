@@ -5,7 +5,6 @@ namespace py = pybind11;
 
 #define OVERLAY "PYTHONOVERLAY"
 #define OVERLAY_FUNC "execute"
-#define OVERLAY_FUNC_ARGC 1
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
     /* Classes required to send data to python. */
@@ -48,27 +47,60 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
             }
         );
 
-    py::class_<LagrangeHalfCPolynomial>(m, "LagrangeHalfCPolynomial")
-        .def(py::init<>());
+    py::class_<LagrangeHalfCPolynomial, std::unique_ptr<LagrangeHalfCPolynomial, py::nodelete>>(m, "LagrangeHalfCPolynomial")
+        .def(py::init<>())
+        .def("__getitem__",
+            [](const LagrangeHalfCPolynomial *a, int i){
+                return a + i;
+            }
+        );
 
-    py::class_<TLweSampleFFT>(m, "TLweSampleFFT")
-        .def(py::init<const TLweParams *, LagrangeHalfCPolynomial *, double>());
+    py::class_<TLweSampleFFT, std::unique_ptr<TLweSampleFFT, py::nodelete>>(m, "TLweSampleFFT")
+        .def(py::init([](const TLweParams *params, LagrangeHalfCPolynomial *a, double cv)
+            {
+                return new TLweSampleFFT(params, a, cv);
+            })
+        )
+        .def("__getitem__",
+            [](const TLweSampleFFT *a, int i){
+                return a + i;
+            }
+        );
 
     py::class_<TGswSampleFFT>(m, "TGswSampleFFT")
-        .def(py::init<const TGswParams *, TLweSampleFFT *>());
+        .def(py::init<const TGswParams *, TLweSampleFFT *>())
+        .def_readwrite("all_samples", &TGswSampleFFT::all_samples);
+
+    py::class_<IntPolynomial, std::unique_ptr<IntPolynomial, py::nodelete>>(m, "IntPolynomial")
+        .def(py::init([](const int32_t N)
+            {
+                return new_IntPolynomial(N);
+            })
+        )
+        .def("__getitem__",
+            [](const IntPolynomial *a, int i){
+                return a + i;
+            }
+        );
 
     /* Functions used to expand tfhe_blindRoate_FFT in python. */
-    m.def("tGswFFTExternMulToTLwe",
-            &tGswFFTExternMulToTLwe
-    );
+    m.def("tGswFFTExternMulToTLwe", &tGswFFTExternMulToTLwe);
+
+    m.def("IntPolynomial_ifft", &IntPolynomial_ifft);
+
+    m.def("tLweFromFFTConvert", &tLweFromFFTConvert);
+
+    m.def("tLweFFTAddMulRTo", &tLweFFTAddMulRTo);
+
+    m.def("tLweFFTClear", &tLweFFTClear);
 }
 
-#define RUNPY(overlay, func, a, b, c) ({\
+#define RUNPY(overlay, func, a, b, c, d, e, f, g) ({\
         char *mod = getenv(overlay);\
         if (mod != NULL) {\
         try {\
             py::scoped_interpreter guard{};\
             py::module o = py::module::import(mod);\
-            py::object ret = o.attr(func)(a, b, c);}\
+            py::object ret = o.attr(func)(a, b, c, d, e, f, g);}\
         catch(const std::exception& e){std::cerr << e.what() << std::endl;}}\
         })

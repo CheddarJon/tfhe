@@ -1,4 +1,4 @@
-/* 
+/*
  * tgsw_fft_test.cpp
  * Tests the functions defined in /src/include/tgsw_functions.h
  * A set of parameters ad keys is defined in the beginning (N=512,1024,2048 and k=1,2)
@@ -14,6 +14,7 @@
 #include <lagrangehalfc_arithmetic.h>
 #include "fakes/tlwe.h"
 #include "fakes/tlwe-fft.h"
+#include "embpy.h"
 
 #define TFHE_TEST_ENVIRONMENT 1
 

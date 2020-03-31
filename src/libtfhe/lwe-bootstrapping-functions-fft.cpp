@@ -7,7 +7,6 @@
 #include <iostream>
 #include <cassert>
 #include "tfhe.h"
-#include "embpy.h"
 
 using namespace std;
 #define INCLUDE_ALL
@@ -69,8 +68,7 @@ void tfhe_MuxRotate_FFT(TLweSample *result, const TLweSample *accum, const TGswS
     // temp = (X^barai-1)*ACC
     tLweMulByXaiMinusOne(result, barai, accum, bk_params->tlwe_params);
     // temp *= BKi
-    RUNPY(OVERLAY, OVERLAY_FUNC, result, bki, bk_params);
-    //tGswFFTExternMulToTLwe(result, bki, bk_params);
+    tGswFFTExternMulToTLwe(result, bki, bk_params);
     // ACC += temp
     tLweAddTo(result, accum, bk_params->tlwe_params);
 }
