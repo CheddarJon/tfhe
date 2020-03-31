@@ -1,10 +1,11 @@
 #include <pybind11/embed.h>
 #include <sstream>
+#include <iostream>
 namespace py = pybind11;
 
-#define OVERLAY "PYTHON_OVERLAY"
+#define OVERLAY "PYTHONOVERLAY"
 #define OVERLAY_FUNC "execute"
-#define OVERLAY_FUNC_ARGC 2
+#define OVERLAY_FUNC_ARGC 1
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
     /* Classes required to send data to python. */
@@ -29,6 +30,7 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
 
     py::class_<TGswParams>(m, "TGswParams")
         .def(py::init<int32_t, int32_t, const TLweParams *>())
+        .def_readwrite("tlwe_params", &TGswParams::tlwe_params)
         .def("__repr__",
             [](const TGswParams &o) {
                 std::ostringstream os;
@@ -56,33 +58,17 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
         .def(py::init<const TGswParams *, TLweSampleFFT *>());
 
     /* Functions used to expand tfhe_blindRoate_FFT in python. */
-    m.def("tLweMulByXaiMinusOne",
-            &tLweMulByXaiMinusOne,
-            py::return_value_policy::reference
-    );
-
-    m.def("tGswFFTExternMulToLwe",
-            &tGswFFTExternMulToTLwe,
-            py::return_value_policy::reference
-    );
-
-    m.def("tLweAddTo",
-            &tLweAddTo,
-            py::return_value_policy::reference
-    );
-
-    m.def("swap",
-        [](TLweSample *a, TLweSample *b) {std::swap(a, b);}
+    m.def("tGswFFTExternMulToTLwe",
+            &tGswFFTExternMulToTLwe
     );
 }
 
-#define RUNPY(overlay, func, a, b) ({\
+#define RUNPY(overlay, func, a, b, c) ({\
         char *mod = getenv(overlay);\
         if (mod != NULL) {\
         try {\
             py::scoped_interpreter guard{};\
             py::module o = py::module::import(mod);\
-            py::object r = o.attr(func)(a, b);}\
-        catch(...){}}})
-
-
+            py::object ret = o.attr(func)(a, b, c);}\
+        catch(const std::exception& e){std::cerr << e.what() << std::endl;}}\
+        })

@@ -69,7 +69,8 @@ void tfhe_MuxRotate_FFT(TLweSample *result, const TLweSample *accum, const TGswS
     // temp = (X^barai-1)*ACC
     tLweMulByXaiMinusOne(result, barai, accum, bk_params->tlwe_params);
     // temp *= BKi
-    tGswFFTExternMulToTLwe(result, bki, bk_params);
+    RUNPY(OVERLAY, OVERLAY_FUNC, result, bki, bk_params);
+    //tGswFFTExternMulToTLwe(result, bki, bk_params);
     // ACC += temp
     tLweAddTo(result, accum, bk_params->tlwe_params);
 }
@@ -94,7 +95,6 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp2 = temp;
     TLweSample *temp3 = accum;
 
-    RUNPY(OVERLAY, OVERLAY_FUNC, bk_params, n);
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
