@@ -4,8 +4,10 @@
 
 #ifndef TFHE_TEST_ENVIRONMENT
 
+#include <cstdlib>
 #include <iostream>
 #include <cassert>
+#include <ccomplex>
 #include "tfhe.h"
 #include "embpy.h"
 
@@ -74,6 +76,37 @@ void tfhe_MuxRotate_FFT(TLweSample *result, const TLweSample *accum, const TGswS
     tLweAddTo(result, accum, bk_params->tlwe_params);
 }
 
+// External product (*): accum = gsw (*) accum
+void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const TGswParams *params, py::module mod) {
+    const TLweParams *tlwe_params = params->tlwe_params;
+    const int32_t k = tlwe_params->k;
+    const int32_t l = params->l;
+    const int32_t kpl = params->kpl;
+    const int32_t N = tlwe_params->N;
+    //TODO attention, improve these new/delete...
+    IntPolynomial *deca = new_IntPolynomial_array(kpl, N); //decomposed accumulator
+    LagrangeHalfCPolynomial *decaFFT = new_LagrangeHalfCPolynomial_array(kpl, N); //fft version
+    TLweSampleFFT *tmpa = new_TLweSampleFFT(tlwe_params);
+
+    mod.attr("dump")(accum);
+    for (int32_t i = 0; i <= k; i++)
+        tGswTorus32PolynomialDecompH(deca + i * l, accum->a + i, params);
+
+    for (int32_t p = 0; p < kpl; p++)
+        IntPolynomial_ifft(decaFFT + p, deca + p);
+
+    tLweFFTClear(tmpa, tlwe_params);
+
+    for (int32_t p = 0; p < kpl; p++) {
+        tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p, tlwe_params);
+    }
+    tLweFromFFTConvert(accum, tmpa, tlwe_params);
+
+    delete_TLweSampleFFT(tmpa);
+    delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
+    delete_IntPolynomial_array(kpl, deca);
+}
+
 #if defined INCLUDE_ALL || defined INCLUDE_TFHE_BLIND_ROTATE_FFT
 #undef INCLUDE_TFHE_BLIND_ROTATE_FFT
 /**
@@ -94,8 +127,8 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp2 = temp;
     TLweSample *temp3 = accum;
 
-    //RUNPY(OVERLAY, OVERLAY_FUNC, n, bara, temp2, temp3, bk_params, bkFFT);
 
+    /* Sets up the python interpreter. */
     char *mod = getenv(OVERLAY);
     if (mod == NULL) {
         delete_TLweSample(temp);
@@ -108,38 +141,10 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
 
-        //tfhe_MuxRotate_FFT(temp2, temp3, bkFFT + i, barai, bk_params);
         tLweMulByXaiMinusOne(temp2, barai, temp3, bk_params->tlwe_params);
 
-        //tGswFFTExternMulToTLwe(temp2, bkFFT + i, bk_params);
-        overlay.attr(OVERLAY_FUNC)(temp2, bkFFT + i, bk_params);
-        //EXPANSION
-        /*
-        const TLweParams *tlwe_params = bk_params->tlwe_params;
-        const int32_t k = tlwe_params->k;
-        const int32_t l = bk_params->l;
-        const int32_t kpl = bk_params->kpl;
-        const int32_t N = tlwe_params->N;
-        IntPolynomial *deca = new_IntPolynomial_array(kpl, N);
-        LagrangeHalfCPolynomial *decaFFT = new_LagrangeHalfCPolynomial_array(kpl, N);
-        TLweSampleFFT *tmpa = new_TLweSampleFFT(tlwe_params);
+        _tGswFFTExternMulToTLwe(temp2, bkFFT + i, bk_params, overlay);
 
-        for (int32_t j = 0; j <= k; j++)
-            tGswTorus32PolynomialDecompH(deca + j * l, temp2->a + j, bk_params);
-
-        for (int32_t p = 0; p < kpl; p++)
-            IntPolynomial_ifft(decaFFT + p, deca + p);
-        tLweFFTClear(tmpa, tlwe_params);
-
-        for (int32_t p = 0; p < kpl; p++)
-            tLweFFTAddMulRTo(tmpa, decaFFT + p, (bkFFT + i)->all_samples + p, tlwe_params);
-        tLweFromFFTConvert(accum, tmpa, tlwe_params);
-
-        delete_TLweSampleFFT(tmpa);
-        delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
-        delete_IntPolynomial_array(kpl, deca);
-        //END EXPANSION
-        */
         tLweAddTo(temp2, temp3, bk_params->tlwe_params);
         swap(temp2, temp3);
     }

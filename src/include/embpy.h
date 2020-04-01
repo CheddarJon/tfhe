@@ -97,13 +97,3 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
 
     //m.def("tLweFFTClear", &tLweFFTClear);
 }
-
-#define RUNPY(overlay, func, a, b, c, d, e, f) ({\
-        char *mod = getenv(overlay);\
-        if (mod != NULL) {\
-        try {\
-            py::scoped_interpreter guard{};\
-            py::module o = py::module::import(mod);\
-            py::object ret = o.attr(func)(a, b, c, d, e, f);}\
-        catch(const std::exception& e){std::cerr << e.what() << std::endl;}}\
-        })
