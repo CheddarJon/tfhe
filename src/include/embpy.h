@@ -4,7 +4,6 @@
 namespace py = pybind11;
 
 #define OVERLAY "PYTHONOVERLAY"
-#define OVERLAY_FUNC "execute"
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
     /* Classes required to send data to python. */
@@ -48,15 +47,23 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
             })
         ;
 
-    py::class_<LagrangeHalfCPolynomial>(m, "LagrangeHalfCPolynomial")
+    py::class_<LagrangeHalfCPolynomial, std::unique_ptr<LagrangeHalfCPolynomial, py::nodelete>>(m, "LagrangeHalfCPolynomial")
         .def(py::init<>())
+        .def("__getitem__",
+            [](const LagrangeHalfCPolynomial *a, int i){
+                return a + i;
+            })
         ;
 
-    py::class_<TLweSampleFFT>(m, "TLweSampleFFT")
+    py::class_<TLweSampleFFT, std::unique_ptr<TLweSampleFFT, py::nodelete>>(m, "TLweSampleFFT")
         .def(py::init([](const TLweParams *params, LagrangeHalfCPolynomial *a, double cv)
             {
                 return new TLweSampleFFT(params, a, cv);
             }))
+        .def("__getitem__",
+            [](const TLweSampleFFT *a, int i){
+                return a + i;
+            })
         ;
 
     py::class_<TGswSampleFFT>(m, "TGswSampleFFT")
@@ -64,7 +71,7 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
         .def_readwrite("all_samples", &TGswSampleFFT::all_samples)
         ;
 
-    /*py::class_<IntPolynomial, std::unique_ptr<IntPolynomial, py::nodelete>>(m, "IntPolynomial")
+    py::class_<IntPolynomial, std::unique_ptr<IntPolynomial, py::nodelete>>(m, "IntPolynomial")
         .def(py::init([](const int32_t N)
             {
                 return new_IntPolynomial(N);
@@ -73,27 +80,15 @@ PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
         .def("__getitem__",
             [](const IntPolynomial *a, int i){
                 return a + i;
-            }
-        );*/
+            })
+        ;
 
     /* Functions used to expand tfhe_blindRoate_FFT in python. */
     m.def("tGswFFTExternMulToTLwe", &tGswFFTExternMulToTLwe);
 
-    //m.def("tLweMulByXaiMinusOne", &tLweMulByXaiMinusOne);
+    m.def("IntPolynomial_ifft", &IntPolynomial_ifft);
 
-    //m.def("tLweAddTo", &tLweAddTo);
+    m.def("tLweFromFFTConvert", &tLweFromFFTConvert);
 
-    /*m.def("swap",
-        [](TLweSample *a, TLweSample *b){
-            std::swap(a, b);
-        }
-    );*/
-
-    //m.def("IntPolynomial_ifft", &IntPolynomial_ifft);
-
-    //m.def("tLweFromFFTConvert", &tLweFromFFTConvert);
-
-    //m.def("tLweFFTAddMulRTo", &tLweFFTAddMulRTo);
-
-    //m.def("tLweFFTClear", &tLweFFTClear);
+    m.def("tLweFFTAddMulRTo", &tLweFFTAddMulRTo);
 }

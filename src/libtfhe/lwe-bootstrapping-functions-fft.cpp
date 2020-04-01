@@ -88,19 +88,19 @@ void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const 
     LagrangeHalfCPolynomial *decaFFT = new_LagrangeHalfCPolynomial_array(kpl, N); //fft version
     TLweSampleFFT *tmpa = new_TLweSampleFFT(tlwe_params);
 
-    mod.attr("dump")(accum);
     for (int32_t i = 0; i <= k; i++)
         tGswTorus32PolynomialDecompH(deca + i * l, accum->a + i, params);
 
-    for (int32_t p = 0; p < kpl; p++)
-        IntPolynomial_ifft(decaFFT + p, deca + p);
+    mod.attr("loopIntPolyIFFT")(deca, decaFFT, kpl);
+    //for (int32_t p = 0; p < kpl; p++)
+    //    IntPolynomial_ifft(decaFFT + p, deca + p);
 
     tLweFFTClear(tmpa, tlwe_params);
 
-    for (int32_t p = 0; p < kpl; p++) {
-        tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p, tlwe_params);
-    }
-    tLweFromFFTConvert(accum, tmpa, tlwe_params);
+    mod.attr("loopAddMulRTo")(tmpa, decaFFT, gsw, tlwe_params, accum, kpl);
+    //for (int32_t p = 0; p < kpl; p++)
+    //    tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p, tlwe_params);
+    //tLweFromFFTConvert(accum, tmpa, tlwe_params);
 
     delete_TLweSampleFFT(tmpa);
     delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
