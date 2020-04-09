@@ -10,11 +10,11 @@ set(ENABLE_NAYUKI_PORTABLE OFF CACHE BOOL "Enable the Nayuki portable FFT proces
 set(ENABLE_NAYUKI_AVX OFF CACHE BOOL "Enable the Nayuki AVX assembly FFT processor (MIT)")
 set(ENABLE_SPQLIOS_AVX OFF CACHE BOOL "Enable the SPQLIOS AVX assembly FFT processor")
 set(ENABLE_SPQLIOS_FMA OFF CACHE BOOL "Enable the SPQLIOS FMA assembly FFT processor")
-set(ENABLE_TESTS ON CACHE BOOL "Build the tests (requires googletest)")
+set(ENABLE_TESTS OFF CACHE BOOL "Build the tests (requires googletest)")
 
 project(tfhe)
 find_package(pybind11 REQUIRED)
-set(PYBIND11_PYTHON_VERSION "3.8")
+set(PYBIND11_PYTHON_VERSION "3.6")
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang")
   # https://stackoverflow.com/a/16229679
@@ -66,7 +66,7 @@ if (ENABLE_SPQLIOS_FMA)
 list(APPEND FFT_PROCESSORS "spqlios-fma")
 endif(ENABLE_SPQLIOS_FMA)
 
-include_directories("include")
+include_directories("include" "/usr/include/python3.6")
 file(GLOB TFHE_HEADERS include/*.h)
 
 install(FILES ${TFHE_HEADERS}

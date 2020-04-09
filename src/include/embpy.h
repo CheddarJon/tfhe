@@ -5,6 +5,20 @@ namespace py = pybind11;
 
 #define OVERLAY "PYTHONOVERLAY"
 
+static py::module mod;
+static int done = 0;
+
+void set_overlay()
+{
+	if (done) return;
+
+	char *overlay = getenv(OVERLAY);
+	if (overlay == NULL) return;	
+
+	mod = py::module::import(overlay);
+	done = 1;
+}
+
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
     /* Classes required to send data to python. */
     py::class_<TLweParams>(m, "TLweParams")
