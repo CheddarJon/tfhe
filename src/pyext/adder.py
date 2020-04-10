@@ -14,7 +14,6 @@ def add(first, second):
 
     overlay = tfhe_py.base.Overlay('/home/xilinx/adder/adder.bit')
 
-
     add_ip = overlay.scalar_add
     add_ip.write(0x10, first)
     add_ip.write(0x18, second)

@@ -77,7 +77,8 @@ void tfhe_MuxRotate_FFT(TLweSample *result, const TLweSample *accum, const TGswS
 }
 
 // External product (*): accum = gsw (*) accum
-void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const TGswParams *params, py::module mod, py::object base) {
+void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const TGswParams *params, py::module mod, char *overlay) {
+
     const TLweParams *tlwe_params = params->tlwe_params;
     const int32_t k = tlwe_params->k;
     const int32_t l = params->l;
@@ -91,18 +92,25 @@ void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const 
     for (int32_t i = 0; i <= k; i++)
         tGswTorus32PolynomialDecompH(deca + i * l, accum->a + i, params);
 
-    //mod.attr("loopIntPolyIFFT")(base, deca, decaFFT, kpl);
-    mod.attr("led")(base);
-    for (int32_t p = 0; p < kpl; p++)
-        IntPolynomial_ifft(decaFFT + p, deca + p);
-
+    if (overlay != NULL) {
+        mod.attr("loopIntPolyIFFT")(deca, decaFFT, kpl);
+        //mod.attr("led");
+    } else {
+        for (int32_t p = 0; p < kpl; p++)
+            IntPolynomial_ifft(decaFFT + p, deca + p);
+    }
     tLweFFTClear(tmpa, tlwe_params);
 
-    //mod.attr("loopAddMulRTo")(base, tmpa, decaFFT, gsw, tlwe_params, accum, kpl);
-    mod.attr("led")(base);
-    for (int32_t p = 0; p < kpl; p++)
-        tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p, tlwe_params);
-    tLweFromFFTConvert(accum, tmpa, tlwe_params);
+    if (overlay != NULL) {
+        mod.attr("loopAddMulRTo")
+		(tmpa, decaFFT, gsw, tlwe_params, accum, kpl);
+        //mod.attr("led");
+    } else {
+        for (int32_t p = 0; p < kpl; p++)
+            tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p,
+			    tlwe_params);
+        tLweFromFFTConvert(accum, tmpa, tlwe_params);
+    }
 
     delete_TLweSampleFFT(tmpa);
     delete_LagrangeHalfCPolynomial_array(kpl, decaFFT);
@@ -131,42 +139,30 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
     TLweSample *temp3 = accum;
 
 
-    /* Sets up the python interpreter. */
+    /* Gets the name of the python module from the env. */
 
     char *overlaypath = getenv(OVERLAY);
     if (overlaypath == NULL) {
         delete_TLweSample(temp);
         return;
     }
-    //py::scoped_interpreter guard{};
+
     printf("IM ALIVE\n");
     py::module mod = py::module::import(overlaypath);
-    py::print(mod);
-    //py::print(mod);
-    /*if(!done++) {
-       mod = py::module::import(overlaypath);
-       print_mod();
-    }
-    else {
-       print_mod();
-       mod = py::module::import(overlaypath);
-       //mod.reload();
-    }*/
-
-    mod.attr("add")(4, 5);
-    mod.attr("add")(9,10);
 
 
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
         if (barai == 0) continue; //indeed, this is an easy case!
 
-        //tLweMulByXaiMinusOne(temp2, barai, temp3, bk_params->tlwe_params);
+        tLweMulByXaiMinusOne(temp2, barai, temp3, bk_params->tlwe_params);
 
-        //_tGswFFTExternMulToTLwe(temp2, bkFFT + i, bk_params, overlay, basebit);
 
-        //tLweAddTo(temp2, temp3, bk_params->tlwe_params);
-	tfhe_MuxRotate_FFT(temp2, temp3, bkFFT + i, barai, bk_params);
+        _tGswFFTExternMulToTLwe(temp2, bkFFT + i, bk_params, mod, overlaypath);
+
+        tLweAddTo(temp2, temp3, bk_params->tlwe_params);
+	//tfhe_MuxRotate_FFT(temp2, temp3, bkFFT + i, barai, bk_params);
+
         swap(temp2, temp3);
     }
     if (temp3 != accum) {
