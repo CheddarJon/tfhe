@@ -20,6 +20,9 @@ void set_overlay()
 }
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
+
+    m.attr("base") = py::module::import("pynq");
+
     /* Classes required to send data to python. */
     py::class_<TLweParams>(m, "TLweParams")
         .def(py::init<int32_t, int32_t, double, double>())

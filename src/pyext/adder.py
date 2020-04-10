@@ -7,11 +7,13 @@
 ################################################################
 
 
-from pynq import Overlay
+#from pynq import Overlay
+import tfhe_py
 
 def add(first, second):
 
-    overlay = Overlay('/home/xilinx/adder/adder.bit')
+    overlay = tfhe_py.base.Overlay('/home/xilinx/adder/adder.bit')
+
 
     add_ip = overlay.scalar_add
     add_ip.write(0x10, first)

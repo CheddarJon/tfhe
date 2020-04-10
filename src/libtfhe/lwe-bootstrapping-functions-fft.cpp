@@ -118,6 +118,7 @@ void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const 
  * @param bara An array of n coefficients between 0 and 2N-1
  * @param bk_params The parameters of bk
  */
+
 EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
                                  const TGswSampleFFT *bkFFT,
                                  const int32_t *bara,
@@ -131,16 +132,30 @@ EXPORT void tfhe_blindRotate_FFT(TLweSample *accum,
 
 
     /* Sets up the python interpreter. */
-    /*char *overlaypath = getenv(OVERLAY);
+
+    char *overlaypath = getenv(OVERLAY);
     if (overlaypath == NULL) {
         delete_TLweSample(temp);
         return;
+    }
+    //py::scoped_interpreter guard{};
+    printf("IM ALIVE\n");
+    py::module mod = py::module::import(overlaypath);
+    py::print(mod);
+    //py::print(mod);
+    /*if(!done++) {
+       mod = py::module::import(overlaypath);
+       print_mod();
+    }
+    else {
+       print_mod();
+       mod = py::module::import(overlaypath);
+       //mod.reload();
     }*/
-    py::scoped_interpreter guard{};
 
-    set_overlay();
-    
     mod.attr("add")(4, 5);
+    mod.attr("add")(9,10);
+
 
     for (int32_t i = 0; i < n; i++) {
         const int32_t barai = bara[i];
