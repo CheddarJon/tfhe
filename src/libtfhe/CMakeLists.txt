@@ -33,8 +33,8 @@ set(SRCS
     tfhe_gate_bootstrapping_structures.cpp
     )
 
-add_library(tfhe-core OBJECT ${SRCS} ${TFHE_HEADERS})
-target_link_libraries(tfhe-core PRIVATE pybind11::embed)
+add_library(tfhe-core OBJECT ${SRCS} ${TFHE_HEADERS} "/usr/include/python3.6/Python.h")
+#target_link_libraries(tfhe-core PRIVATE pybind11::embed)
 set_property(TARGET tfhe-core PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
