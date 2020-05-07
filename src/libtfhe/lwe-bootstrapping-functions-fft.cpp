@@ -92,20 +92,15 @@ void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const 
     for (int32_t i = 0; i <= k; i++)
         tGswTorus32PolynomialDecompH(deca + i * l, accum->a + i, params);
 
-    if (overlay != NULL) {
-        mod.attr("loopIntPolyIFFT")(deca, decaFFT, kpl);
-        //mod.attr("led");
-    } else {
-        for (int32_t p = 0; p < kpl; p++)
+    for (int32_t p = 0; p < kpl; p++)
             IntPolynomial_ifft(decaFFT + p, deca + p);
-    }
+
     tLweFFTClear(tmpa, tlwe_params);
 
     if (overlay != NULL) {
-        mod.attr("loopAddMulRTo")
-		(tmpa, decaFFT, gsw, tlwe_params, accum, kpl);
-        //mod.attr("led");
+        mod.attr("overlay")(gsw, deca);
     } else {
+
         for (int32_t p = 0; p < kpl; p++)
             tLweFFTAddMulRTo(tmpa, decaFFT + p, gsw->all_samples + p,
 			    tlwe_params);
