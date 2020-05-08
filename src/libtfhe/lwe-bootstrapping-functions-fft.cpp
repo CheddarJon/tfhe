@@ -98,7 +98,7 @@ void _tGswFFTExternMulToTLwe(TLweSample *accum, const TGswSampleFFT *gsw, const 
     tLweFFTClear(tmpa, tlwe_params);
 
     if (overlay != NULL) {
-        mod.attr("overlay")(gsw, deca);
+        mod.attr("overlay")(gsw, decaFFT);
     } else {
 
         for (int32_t p = 0; p < kpl; p++)

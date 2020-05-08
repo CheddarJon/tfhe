@@ -13,7 +13,7 @@ void set_overlay()
 	if (done) return;
 
 	char *overlay = getenv(OVERLAY);
-	if (overlay == NULL) return;	
+	if (overlay == NULL) return;
 
 	mod = py::module::import(overlay);
 	done = 1;
@@ -21,7 +21,7 @@ void set_overlay()
 
 PYBIND11_EMBEDDED_MODULE(tfhe_py, m) {
 
-    m.attr("base") = py::module::import("pynq");
+    //m.attr("base") = py::module::import("pynq");
 
     /* Classes required to send data to python. */
     py::class_<TLweParams>(m, "TLweParams")
